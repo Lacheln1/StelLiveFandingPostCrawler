@@ -5,7 +5,7 @@ import { Scheduler } from "./src/scheduler.js";
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 const PORT = process.env.PORT || 8080;
 
-if (DISCORD_WEBHOOK_URL) {
+if (!DISCORD_WEBHOOK_URL) {
     console.error("DISCORD_WEBHOOK_URL 환경변수가 설정되지 않았습니다.");
     process.exit(1);
 }
