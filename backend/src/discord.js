@@ -4,7 +4,7 @@ export class DiscordNotifier {
     }
 
     async sendNotification(post) {
-        if (!history.webhookUrl) {
+        if (!this.webhookUrl) {
             console.error("discord webhook url이 설정되지 않았습니다.");
             return false;
         }
@@ -35,7 +35,7 @@ export class DiscordNotifier {
 
             // 이미지가 있는 경우 추가
             if (post.image) {
-                embed.thumnail = {
+                embed.thumbnail = {
                     url: post.image,
                 };
             }
@@ -43,7 +43,7 @@ export class DiscordNotifier {
             // 디스코드 봇 정보
             const payload = {
                 username: "StelLive Bot",
-                avata_url: "https://cdn.discordapp.com/embed/avatars/0.png",
+                avatar_url: "https://cdn.discordapp.com/embed/avatars/0.png",
                 embeds: [embed],
             };
 

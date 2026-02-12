@@ -1,6 +1,6 @@
 import cron from "node-cron";
-import { FandingCrawler } from "./crawler";
-import { DiscordNotifier } from "./discord";
+import { FandingCrawler } from "./crawler.js";
+import { DiscordNotifier } from "./discord.js";
 
 export class Scheduler {
     constructor() {

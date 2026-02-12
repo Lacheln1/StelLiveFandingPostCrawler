@@ -2,7 +2,7 @@ import puppeteer from "puppeteer";
 
 export class FandingCrawler {
     constructor() {
-        this.browser.null;
+        this.browser = null;
         this.page = null;
         this.lastPostId = null;
     }
@@ -12,7 +12,7 @@ export class FandingCrawler {
         this.browser = await puppeteer.launch({
             headless: "new",
             args: [
-                "--no-andbox",
+                "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
@@ -86,9 +86,9 @@ export class FandingCrawler {
                 return null;
             }
 
-            if (this.lastPostId !== this.lastPostId.postId) {
+            if (this.lastPostId !== latestPost.postId) {
                 console.log("새 글이 감지되었습니다.");
-                this.lastPostId = this.lastPostId.postId;
+                this.lastPostId = latestPost.postId;
                 return latestPost;
             }
 
