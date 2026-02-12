@@ -27,43 +27,40 @@ export class FandingCrawler {
     async crawl() {
         try {
             console.log("크롤링 시작", new Date().toLocaleString("ko-KR"));
-            await this.page.goto("https://fanding.kr/@stellive/", {
+            await this.page.goto("https://fanding.kr/@stellive/section/3498/", {
                 waitUntil: "networkidle2",
                 timeout: 30000,
             });
 
             //페이지 로드 대기
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
 
             //최신 글 정보 추출
             const latestPost = await this.page.evaluate(() => {
-                // 추후 fanding의 실제 선택자에 맞게 수정 필요
-                // 예시: 첫번째 게시글 요소
-                const postElement = document.querySelector(
-                    'article:first-of-type, .post-item:first-child, [class*="post"]:first-of-type',
-                );
-                if (!postElement) return null;
+                // 유지보수: fanding의 실제 선택자에 맞게 수정 필요
+                // 게시글 링크 찾기 (첫 번재 = 최신글)
+                const postLink = document.querySelector('a.channel-card[href*="/post/"]');
+
+                if (!postLink) return null;
+
+                // URL 추출
+                const link = postLink.href;
+
+                // 게시글 ID 추출 (URL에서 숫자 부분)
+                const postIdMatch = link.match(/\/post\/(\d+)\//);
+                const postId = postIdMatch ? postIdMatch[1] : Date.now().toString();
 
                 // 제목 추출
-                const titleElement = postElement.querySelector(
-                    'h1, h2, h3, [class*="title"], [class*="subject"]',
-                );
+                const titleElement = postLink.querySelector(".channel-card-title");
                 const title = titleElement?.textContent?.trim() || "제목 없음";
 
-                // 링크 추출
-                const linkElement = postElement.querySelector("a[href]");
-                const link = linkElement?.href || window.location.href;
-
-                // 고유 ID 생성 (링크 기반)
-                const postId = link.split("/").pop() || Date.now().toString();
-
-                // 이미지 추출 (있는 경우)
-                const imageElement = postElement.querySelector("img");
+                // 이미지 추출
+                const imageElement = postLink.querySelector(".channel-card-thumbnail img");
                 const image = imageElement?.src || null;
 
                 // 작성 시간 추출
-                const timeElement = postElement.querySelector(
-                    'time, [class*="date"], [class*="time"]',
+                const timeElement = postLink.querySelector(
+                    ".channel-card-info-group .channel-card-info",
                 );
                 const timestamp =
                     timeElement?.textContent?.trim() || new Date().toLocaleString("ko-KR");
