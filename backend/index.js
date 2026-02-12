@@ -28,9 +28,9 @@ server.listen(PORT, () => {
 });
 
 async function main() {
-    console.log("╔═══════════════════════════════════════╗");
-    console.log("║   StelLive FANDING 크롤링 봇           ║");
-    console.log("╚═══════════════════════════════════════╝\n");
+    console.log("══════════════════════════");
+    console.log("StelLive fanding 크롤링 봇 ");
+    console.log("══════════════════════════");
 
     try {
         await scheduler.initialize(DISCORD_WEBHOOK_URL);
