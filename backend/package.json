@@ -26,8 +26,5 @@
     },
     "engines": {
         "node": ">=22.0.0"
-    },
-    "puppeteer": {
-        "executablePath": "/usr/bin/chromium-browser"
     }
 }
