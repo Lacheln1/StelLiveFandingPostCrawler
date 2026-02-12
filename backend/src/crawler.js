@@ -11,14 +11,23 @@ export class FandingCrawler {
         console.log("브라우저 초기화 중...");
 
         const puppeteerOptions = {
-            // ← const로 선언!
             headless: "shell",
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
+                "--disable-software-rasterizer",
+                "--disable-dev-tools",
+                "--no-first-run",
+                "--no-zygote",
+                "--single-process", // 메모리 절약
+                "--disable-extensions",
+                "--disable-background-networking",
+                "--disable-default-apps",
+                "--mute-audio",
             ],
+            timeout: 60000,
         };
 
         // Fly.io/Render 배포 환경에서는 시스템 Chromium 사용
@@ -26,12 +35,19 @@ export class FandingCrawler {
             puppeteerOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
         }
 
-        this.browser = await puppeteer.launch(puppeteerOptions);
+        try {
+            this.browser = await puppeteer.launch(puppeteerOptions);
+            console.log("브라우저 시작 성공");
+        } catch (error) {
+            console.error("브라우저 시작 실패:", error.message);
+            throw error;
+        }
 
         this.page = await this.browser.newPage();
 
+        // User-Agent 설정 (최신 방식)
         await this.page.setUserAgent(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         );
 
         console.log("브라우저 준비 완료");
@@ -39,19 +55,25 @@ export class FandingCrawler {
 
     async crawl() {
         try {
-            console.log("크롤링 시작", new Date().toLocaleString("ko-KR"));
+            console.log("크롤링 시작:", new Date().toLocaleString("ko-KR"));
+
             await this.page.goto("https://fanding.kr/@stellive/section/3498/", {
                 waitUntil: "networkidle2",
                 timeout: 30000,
             });
 
-            //페이지 로드 대기
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+            // 페이지 로드 대기
+            await this.page.waitForTimeout(5000);
 
-            //최신 글 정보 추출
+            // 스크롤해서 콘텐츠 로드
+            await this.page.evaluate(() => {
+                window.scrollTo(0, document.body.scrollHeight);
+            });
+            await this.page.waitForTimeout(2000);
+
+            // 최신 글 정보 추출
             const latestPost = await this.page.evaluate(() => {
-                // 유지보수: fanding의 실제 선택자에 맞게 수정 필요
-                // 게시글 링크 찾기 (첫 번재 = 최신글)
+                // 게시글 링크 찾기 (첫 번째 = 최신글)
                 const postLink = document.querySelector('a.channel-card[href*="/post/"]');
 
                 if (!postLink) return null;
@@ -78,7 +100,13 @@ export class FandingCrawler {
                 const timestamp =
                     timeElement?.textContent?.trim() || new Date().toLocaleString("ko-KR");
 
-                return { postId, title, link, image, timestamp };
+                return {
+                    postId,
+                    title,
+                    link,
+                    image,
+                    timestamp,
+                };
             });
 
             if (!latestPost) {
@@ -92,12 +120,12 @@ export class FandingCrawler {
             if (this.lastPostId === null) {
                 // 첫 실행 시 현재 글을 기준으로 설정
                 this.lastPostId = latestPost.postId;
-                console.log("초기 게시글 id 저장", this.lastPostId);
+                console.log("초기 게시글 ID 저장:", this.lastPostId);
                 return null;
             }
 
             if (this.lastPostId !== latestPost.postId) {
-                console.log("새 글이 감지되었습니다.");
+                console.log("새 글 감지!");
                 this.lastPostId = latestPost.postId;
                 return latestPost;
             }
