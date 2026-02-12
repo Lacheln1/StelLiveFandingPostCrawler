@@ -39,6 +39,9 @@ DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOO
 ```
 
 ### 3단계: 페이지 구조 분석 (필수!)
+**(현재 crawler.js에는 fanding에 맞게 작성되어있으니 안하셔도 됩니다)**
+
+**주의 : "봇 탐지(Bot Detection)" 및 "리다이렉트 방어로 인해 작동이 되지 않을 수 있습니다.**
 
 ```bash
 npm run analyze
@@ -49,7 +52,7 @@ npm run analyze
 - HTML 구조를 분석해서
 - 올바른 선택자를 추천해줍니다
 
-출력된 선택자를 `src/crawler.js` 파일에 적용하세요.
+출력된 선택자를 `src/crawler.js` 파일에 적용하세요. 
 
 ### 4단계: 테스트
 
@@ -85,11 +88,10 @@ backend/
 ├── test.js              # 테스트 스크립트
 ├── analyze.js           # 페이지 구조 분석 (디버깅용)
 ├── package.json         # ES Modules 활성화
-├── .env                 # 환경변수 (gitignore)
-└── railway.json         # Railway 배포 설정
+└── .env                 # 환경변수 (gitignore)
 ```
 
-## ⚙️ 크롤링 주기 변경
+## 크롤링 주기 변경
 
 **현재 설정 (기본값 - 권장)**
 **시간대별 차등 크롤링** - 효율적이고 안전
