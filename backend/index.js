@@ -3,6 +3,7 @@ import http from "http";
 import { Scheduler } from "./src/scheduler.js";
 
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+const PORT = process.env.PORT || 8080;
 
 if (DISCORD_WEBHOOK_URL) {
     console.error("DISCORD_WEBHOOK_URL 환경변수가 설정되지 않았습니다.");
