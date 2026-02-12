@@ -15,7 +15,6 @@ fanding.kr의 StelLive 크리에이터 페이지를 모니터링하고 새 글�
 - **Puppeteer**: 웹 크롤링
 - **node-cron**: 스케줄링
 - **Native Fetch API**: HTTP 요청 (Discord Webhook)
-- **Railway**: 무료 배포 플랫폼
 
 ## 설치 및 실행
 
