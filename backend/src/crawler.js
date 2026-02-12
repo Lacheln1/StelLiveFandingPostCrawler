@@ -10,19 +10,22 @@ export class FandingCrawler {
         console.log("브라우저 초기화 중...");
 
         const puppeteerOptions = {
-            headless: "shell", // 최신 버전에서는 'shell' 또는 true 권장
+            headless: "shell",
+            protocolTimeout: 120000,
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage", // 메모리 부족 시 /tmp 사용 방지
+                "--disable-dev-shm-usage",
                 "--disable-gpu",
                 "--disable-dev-tools",
                 "--no-first-run",
                 "--no-zygote",
-                // "--single-process", //  충돌의 주원인.
                 "--disable-extensions",
                 "--disable-background-networking",
                 "--mute-audio",
+                "--disable-software-rasterizer",
+                "--disable-background-timer-throttling",
+                "--js-flags=--max-old-space-size=256",
             ],
             timeout: 60000,
         };
