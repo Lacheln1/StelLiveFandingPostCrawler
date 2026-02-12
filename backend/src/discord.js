@@ -71,7 +71,7 @@ export class DiscordNotifier {
         try {
             const payload = {
                 username: "StelLive Bot",
-                content: "봇이 정상적으로 작동 중입니다.(테스트 메시지임)",
+                content: "봇이 정상적으로 작동 중입니다.",
             };
 
             const response = await fetch(this.webhookUrl, {
