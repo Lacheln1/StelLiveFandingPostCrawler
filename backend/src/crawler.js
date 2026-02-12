@@ -10,23 +10,31 @@ export class FandingCrawler {
     async initialize() {
         console.log("브라우저 초기화 중...");
 
-        // Render 배포 환경에서는 시스템 Chromium 사용
-        if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-            puppeteerOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-        }
-        this.browser = await puppeteer.launch({
-            headless: "new",
+        const puppeteerOptions = {
+            // ← const로 선언!
+            headless: "shell",
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
-                "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0",
             ],
-        });
+        };
+
+        // Fly.io/Render 배포 환경에서는 시스템 Chromium 사용
+        if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+            puppeteerOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+        }
+
+        this.browser = await puppeteer.launch(puppeteerOptions);
 
         this.page = await this.browser.newPage();
-        console.log("브라우저 준비 완료.");
+
+        await this.page.setUserAgent(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        );
+
+        console.log("브라우저 준비 완료");
     }
 
     async crawl() {
