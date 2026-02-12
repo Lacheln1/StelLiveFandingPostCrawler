@@ -207,25 +207,7 @@ this.task = cron.schedule('0 * * * *', async () => {
 - `*/10 9-18 * * *` - 오전 9시~오후 6시, 10분마다
 - `0 9-17/2 * * *` - 오전 9시~오후 5시, 2시간마다 (9시, 11시, 1시, 3시, 5시)
 
-## Railway 배포
 
-### 1. Railway 계정 생성
-- [railway.app](https://railway.app) 접속
-- GitHub 계정으로 로그인
-
-### 2. 새 프로젝트 생성
-1. **New Project** 클릭
-2. **Deploy from GitHub repo** 선택
-3. 저장소 연결
-
-### 3. 환경변수 설정
-1. 프로젝트 설정에서 **Variables** 탭 이동
-2. `DISCORD_WEBHOOK_URL` 추가
-3. Webhook URL 값 입력
-
-### 4. 배포
-- 자동으로 배포 시작
-- 로그에서 "봇이 정상적으로 실행되었습니다" 확인
 
 ## 문제 해결
 
