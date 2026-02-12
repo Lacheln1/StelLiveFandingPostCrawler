@@ -17,7 +17,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ status: "ok", uptime: process.uptime() }));
     } else {
         res.writeHead(200, { "Content-Type": "text/plain" });
-        res.end("Stellive FANDING Bot is running");
+        res.end("StelLive fanding Bot is running");
     }
 });
 
