@@ -1,5 +1,6 @@
 import "dotenv/config";
-import { Scheduler } from "./src/scheduler";
+import http from "http";
+import { Scheduler } from "./src/scheduler.js";
 
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
