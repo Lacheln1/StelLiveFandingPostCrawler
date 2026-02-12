@@ -1,25 +1,23 @@
-# fly.toml app configuration file generated for stellive-bot-white-haze-5621 on 2026-02-12T17:59:13+09:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
+# fly.toml app configuration file generated for stellive-bot
+# Fly.io 배포 설정 파일
 
-app = 'stellive-bot-white-haze-5621'
-primary_region = 'nrt'
+app = "stellive-bot"
+primary_region = "nrt" # 도쿄
 
 [build]
 
 [env]
-  PORT = '8080'
+  PORT = "8080"
 
 [http_service]
-  internal_port = 3000
+  internal_port = 8080
   force_https = true
-  auto_stop_machines = 'off'
+  auto_stop_machines = false
   auto_start_machines = false
   min_machines_running = 1
-  processes = ['app']
+  processes = ["app"]
 
 [[vm]]
-  cpu_kind = 'shared'
+  cpu_kind = "shared"
   cpus = 1
-  memory_mb = 256
+  memory_mb = 512
