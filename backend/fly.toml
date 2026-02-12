@@ -1,0 +1,23 @@
+# fly.toml app configuration file generated for stellive-bot
+# Fly.io 배포 설정 파일
+
+app = "stellive-bot"
+primary_region = "nrt" # 도쿄 (한국과 가까움)
+
+[build]
+
+[env]
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+  processes = ["app"]
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256

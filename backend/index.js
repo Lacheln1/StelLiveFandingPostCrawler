@@ -10,6 +10,21 @@ if (DISCORD_WEBHOOK_URL) {
 
 const scheduler = new Scheduler();
 
+// Fly.io 헬스체크용 HTTP 서버
+const server = http.createServer((req, res) => {
+    if (req.url === "/health") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ status: "ok", uptime: process.uptime() }));
+    } else {
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("Stellive FANDING Bot is running");
+    }
+});
+
+server.listen(PORT, () => {
+    console.log(`HTTP 서버 시작: 포트 ${PORT}`);
+});
+
 async function main() {
     console.log("╔═══════════════════════════════════════╗");
     console.log("║   StelLive FANDING 크롤링 봇           ║");
