@@ -23,9 +23,12 @@ export class Scheduler {
     }
 
     start() {
-        //10분 마다 실행 (*/10 * * * *)
-        //테스트용으로 1분마다 실행하려면: '*/1 * * * *)
-        this.task = cron.schedule("*/10 * * * *", async () => {
+        const hour = new Date().getHours();
+        //오전 9시 ~ 밤12시 : 5분마다 크롤링
+        //밤 12시 ~ 오전9시: 60분마다 크롤링
+        const interval = hour >= 9 && hour < 24 ? "*/5 * * * *" : "*/60 * * * *";
+
+        this.task = cron.schedule(interval, async () => {
             console.log("------------");
             console.log("스케줄 실행", new Date().toLocaleString("ko-KR"));
 
