@@ -3,7 +3,6 @@ import puppeteer from "puppeteer";
 export class FandingCrawler {
     constructor() {
         this.browser = null;
-        this.page = null;
         this.lastPostId = null;
     }
 
@@ -11,20 +10,18 @@ export class FandingCrawler {
         console.log("브라우저 초기화 중...");
 
         const puppeteerOptions = {
-            headless: "shell",
+            headless: "shell", // 최신 버전에서는 'shell' 또는 true 권장
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
+                "--disable-dev-shm-usage", // 메모리 부족 시 /tmp 사용 방지
                 "--disable-gpu",
-                "--disable-software-rasterizer",
                 "--disable-dev-tools",
                 "--no-first-run",
                 "--no-zygote",
-                "--single-process", // 메모리 절약
+                // "--single-process", //  충돌의 주원인.
                 "--disable-extensions",
                 "--disable-background-networking",
-                "--disable-default-apps",
                 "--mute-audio",
             ],
             timeout: 60000,
@@ -42,73 +39,67 @@ export class FandingCrawler {
             console.error("브라우저 시작 실패:", error.message);
             throw error;
         }
-
-        this.page = await this.browser.newPage();
-
-        // User-Agent 설정 (최신 방식)
-        await this.page.setUserAgent(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        );
-
-        console.log("브라우저 준비 완료");
     }
 
     async crawl() {
+        // 0. 브라우저 상태 체크 및 재연결 (Self-Healing)
+        if (!this.browser || !this.browser.isConnected()) {
+            console.warn("브라우저가 닫혀있어 재시작합니다...");
+            try {
+                if (this.browser) await this.browser.close().catch(() => {});
+                await this.initialize();
+            } catch (e) {
+                console.error("브라우저 재시작 실패:", e.message);
+                return null;
+            }
+        }
+
+        let newPage = null;
         try {
             console.log("크롤링 시작:", new Date().toLocaleString("ko-KR"));
 
-            // 페이지가 준비되었는지 확인
-            if (!this.page) {
-                console.error("페이지가 초기화되지 않았습니다.");
-                return null;
-            }
+            newPage = await this.browser.newPage();
 
-            // 브라우저 준비 대기
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            // 뷰포트 설정 (모바일/데스크탑 반응형 대응 및 렌더링 안정성 확보)
+            await newPage.setViewport({ width: 1280, height: 800 });
 
+            await newPage.setUserAgent(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            );
+
+            // 1. 페이지 이동 전략 변경
             try {
-                await this.page.goto("https://fanding.kr/@stellive/section/3498/", {
-                    waitUntil: "domcontentloaded",
-                    timeout: 60000,
+                await newPage.goto("https://fanding.kr/@stellive/section/3498/", {
+                    waitUntil: "domcontentloaded", // 'load' 대신 HTML만 로드되면 진행 (속도, 안정성 증가)
+                    timeout: 30000, // 30초면 충분함
                 });
-                console.log("페이지 로드 완료");
+                console.log("페이지 접속 완료 (DOM 로드됨)");
             } catch (gotoError) {
-                console.error("페이지 로드 실패:", gotoError.message);
-                return null;
+                console.error("페이지 접속 실패:", gotoError.message);
+                throw gotoError;
             }
 
-            // 페이지 로드 대기
-            await this.page.waitForTimeout(7000);
-
-            // 스크롤해서 콘텐츠 로드
+            // 2. 선택자 로딩 대기 (SPA 로딩 대기용)
             try {
-                await this.page.evaluate(() => {
-                    window.scrollTo(0, document.body.scrollHeight);
-                });
-                await this.page.waitForTimeout(3000); // 2초 → 3초 증가
-            } catch (scrollError) {
-                console.warn("⚠️  스크롤 실패 (무시):", scrollError.message);
+                // 게시글 리스트가 뜰 때까지 명시적으로 기다림 (최대 10초)
+                await newPage.waitForSelector('a.channel-card[href*="/post/"]', { timeout: 10000 });
+            } catch (waitError) {
+                console.warn("게시글 요소를 찾는데 시간이 걸리거나 실패했습니다.");
             }
 
-            // 최신 글 정보 추출
-            const latestPost = await this.page.evaluate(() => {
-                // 게시글 링크 찾기 (첫 번째 = 최신글)
+            // 3. 최신 글 정보 추출
+            const latestPost = await newPage.evaluate(() => {
                 const postLink = document.querySelector('a.channel-card[href*="/post/"]');
-
                 if (!postLink) return null;
 
-                // URL 추출
                 const link = postLink.href;
-
-                // 게시글 ID 추출 (URL에서 숫자 부분)
                 const postIdMatch = link.match(/\/post\/(\d+)\//);
-                const postId = postIdMatch ? postIdMatch[1] : Date.now().toString();
+                const postId = postIdMatch ? postIdMatch[1] : null; // ID 없으면 null 처리
+                if (!postId) return null;
 
-                // 제목 추출
                 const titleElement = postLink.querySelector(".channel-card-title");
                 const title = titleElement?.textContent?.trim() || "제목 없음";
 
-                // 이미지 추출
                 const imageElement = postLink.querySelector(".channel-card-thumbnail img");
                 const image = imageElement?.src || null;
 
@@ -116,51 +107,65 @@ export class FandingCrawler {
                 const timeElement = postLink.querySelector(
                     ".channel-card-info-group .channel-card-info",
                 );
-                const timestamp =
-                    timeElement?.textContent?.trim() || new Date().toLocaleString("ko-KR");
+                const timestamp = timeElement?.textContent?.trim();
 
-                return {
-                    postId,
-                    title,
-                    link,
-                    image,
-                    timestamp,
-                };
+                return { postId, title, link, image, timestamp };
             });
 
             if (!latestPost) {
-                console.log("게시글을 찾을 수 없습니다. 선택자를 확인하세요.");
+                console.log("게시글을 찾을 수 없습니다.");
                 return null;
             }
 
-            console.log("최신 글:", latestPost.title);
-
-            // 새 글 확인
+            // 4. 로직 처리
             if (this.lastPostId === null) {
-                // 첫 실행 시 현재 글을 기준으로 설정
                 this.lastPostId = latestPost.postId;
-                console.log("초기 게시글 ID 저장:", this.lastPostId);
-                return null;
-            }
+                console.log("초기 설정 완료. 최신글 ID:", this.lastPostId);
 
-            if (this.lastPostId !== latestPost.postId) {
-                console.log("새 글 감지");
-                this.lastPostId = latestPost.postId;
+                // 최초 실행 시 현재 최신 글을 반환하여 알림 전송
                 return latestPost;
             }
 
-            console.log("변경사항 없음");
+            if (this.lastPostId !== latestPost.postId) {
+                console.log(`새 글 발견! [${latestPost.title}]`);
+                this.lastPostId = latestPost.postId;
+
+                // 새 글 발견 시에도 timestamp 추가
+                latestPost.timestamp = new Date().toLocaleString("ko-KR");
+                return latestPost;
+            }
+
+            console.log("새 글 없음");
             return null;
         } catch (error) {
-            console.error("크롤링 에러:", error.message);
+            console.error("크롤링 에러 발생:", error.message);
+
+            // 치명적 에러 발생 시 브라우저 인스턴스 초기화 고려
+            if (
+                error.message.includes("Session closed") ||
+                error.message.includes("Target closed")
+            ) {
+                console.log("브라우저 세션이 종료되었습니다. 다음 실행 시 재시작합니다.");
+                this.browser = null;
+            }
             return null;
+        } finally {
+            // 5. 페이지 닫기 (반드시 실행)
+            if (newPage) {
+                try {
+                    await newPage.close();
+                } catch (e) {
+                    console.error("페이지 닫기 실패 (이미 닫힘):", e.message);
+                }
+            }
         }
     }
 
     async close() {
         if (this.browser) {
             await this.browser.close();
-            console.log("브라우저 종료");
+            this.browser = null;
+            console.log("브라우저 완전 종료");
         }
     }
 }
