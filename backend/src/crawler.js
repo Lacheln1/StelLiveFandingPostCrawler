@@ -30,11 +30,6 @@ export class FandingCrawler {
             timeout: 60000,
         };
 
-        // Fly.io/Render 배포 환경에서는 시스템 Chromium 사용
-        if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-            puppeteerOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-        }
-
         try {
             this.browser = await puppeteer.launch(puppeteerOptions);
             console.log("브라우저 시작 성공");
@@ -130,7 +125,7 @@ export class FandingCrawler {
             }
 
             if (this.lastPostId !== latestPost.postId) {
-                console.log(`새 글 발견! [${latestPost.title}]`);
+                console.log(`새 글이 발견되었습니다. [${latestPost.title}]`);
                 this.lastPostId = latestPost.postId;
 
                 // 새 글 발견 시에도 timestamp 추가

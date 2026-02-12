@@ -1,9 +1,7 @@
 import "dotenv/config";
-import http from "http";
 import { Scheduler } from "./src/scheduler.js";
 
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
-const PORT = process.env.PORT || 8080;
 
 if (!DISCORD_WEBHOOK_URL) {
     console.error("DISCORD_WEBHOOK_URL 환경변수가 설정되지 않았습니다.");
@@ -11,21 +9,6 @@ if (!DISCORD_WEBHOOK_URL) {
 }
 
 const scheduler = new Scheduler();
-
-// Fly.io 헬스체크용 HTTP 서버
-const server = http.createServer((req, res) => {
-    if (req.url === "/health") {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", uptime: process.uptime() }));
-    } else {
-        res.writeHead(200, { "Content-Type": "text/plain" });
-        res.end("StelLive fanding Bot is running");
-    }
-});
-
-server.listen(PORT, () => {
-    console.log(`HTTP 서버 시작: 포트 ${PORT}`);
-});
 
 async function main() {
     console.log("══════════════════════════");
