@@ -57,19 +57,34 @@ export class FandingCrawler {
         try {
             console.log("크롤링 시작:", new Date().toLocaleString("ko-KR"));
 
-            await this.page.goto("https://fanding.kr/@stellive/section/3498/", {
-                waitUntil: "networkidle2",
-                timeout: 30000,
-            });
+            // 페이지가 준비되었는지 확인
+            if (!this.page) {
+                console.error("페이지가 초기화되지 않았습니다.");
+                return null;
+            }
+
+            try {
+                await this.page.goto("https://fanding.kr/@stellive/section/3498/", {
+                    waitUntil: "domcontentloaded",
+                    timeout: 60000,
+                });
+            } catch (gotoError) {
+                console.error("페이지 로드 실패:", gotoError.message);
+                return null;
+            }
 
             // 페이지 로드 대기
-            await this.page.waitForTimeout(5000);
+            await this.page.waitForTimeout(7000); // 5초 → 7초 증가
 
             // 스크롤해서 콘텐츠 로드
-            await this.page.evaluate(() => {
-                window.scrollTo(0, document.body.scrollHeight);
-            });
-            await this.page.waitForTimeout(2000);
+            try {
+                await this.page.evaluate(() => {
+                    window.scrollTo(0, document.body.scrollHeight);
+                });
+                await this.page.waitForTimeout(3000); // 2초 → 3초 증가
+            } catch (scrollError) {
+                console.warn("⚠️  스크롤 실패 (무시):", scrollError.message);
+            }
 
             // 최신 글 정보 추출
             const latestPost = await this.page.evaluate(() => {
@@ -125,7 +140,7 @@ export class FandingCrawler {
             }
 
             if (this.lastPostId !== latestPost.postId) {
-                console.log("새 글 감지!");
+                console.log("새 글 감지");
                 this.lastPostId = latestPost.postId;
                 return latestPost;
             }
