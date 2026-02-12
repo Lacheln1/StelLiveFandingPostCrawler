@@ -63,18 +63,22 @@ export class FandingCrawler {
                 return null;
             }
 
+            // 브라우저 준비 대기
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+
             try {
                 await this.page.goto("https://fanding.kr/@stellive/section/3498/", {
                     waitUntil: "domcontentloaded",
                     timeout: 60000,
                 });
+                console.log("페이지 로드 완료");
             } catch (gotoError) {
                 console.error("페이지 로드 실패:", gotoError.message);
                 return null;
             }
 
             // 페이지 로드 대기
-            await this.page.waitForTimeout(7000); // 5초 → 7초 증가
+            await this.page.waitForTimeout(7000);
 
             // 스크롤해서 콘텐츠 로드
             try {

@@ -17,6 +17,9 @@ export class Scheduler {
 
         await this.crawler.initialize();
 
+        // 브라우저가 완전히 준비될 때까지 추가 대기
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
         //테스트 메시지 전송
         await this.notifier.sendTestMessage();
         console.log("스케줄러 준비 완료.");
