@@ -1,6 +1,6 @@
-# StelLive FANDING 크롤링 봇 (Node.js 22)
+# StelLive 팬딩 크롤링 봇 (Node.js 22)
 
-FANDING.KR의 Stellive 크리에이터 페이지를 모니터링하고 새 글이 올라오면 Discord로 알림을 보내는 자동화 봇입니다.
+fanding.kr의 StelLive 크리에이터 페이지를 모니터링하고 새 글이 올라오면 Discord로 알림을 보내는 자동화 봇입니다.
 
 ## 주요 기능
 
@@ -46,7 +46,7 @@ npm run analyze
 ```
 
 이 명령어는:
-- FANDING.KR 페이지를 자동으로 열고
+- fanding.kr 페이지를 자동으로 열고
 - HTML 구조를 분석해서
 - 올바른 선택자를 추천해줍니다
 
@@ -235,7 +235,7 @@ this.task = cron.schedule('0 * * * *', async () => {
 npm run analyze
 ```
 
-이 명령어로 FANDING.KR의 실제 HTML 구조를 확인할 수 있습니다.
+이 명령어로 fanding.kr의 실제 HTML 구조를 확인할 수 있습니다.
 
 ### Discord 알림이 오지 않을 때
 
