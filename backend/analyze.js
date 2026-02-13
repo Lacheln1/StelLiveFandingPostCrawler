@@ -32,7 +32,7 @@ async function analyzePage() {
     console.log("전체 HTML 저장: fanding_full_page.html\n");
 
     // 2. 게시글 영역 찾기
-    console.log("🔎 게시글 영역 탐색 중...\n");
+    console.log("게시글 영역 탐색 중...\n");
 
     const possibleSelectors = [
         "article",
