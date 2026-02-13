@@ -128,8 +128,6 @@ export class FandingCrawler {
                 console.log(`새 글이 발견되었습니다. [${latestPost.title}]`);
                 this.lastPostId = latestPost.postId;
 
-                // 새 글 발견 시에도 timestamp 추가
-                latestPost.timestamp = new Date().toLocaleString("ko-KR");
                 return latestPost;
             }
 
