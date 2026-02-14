@@ -45,4 +45,12 @@ export class GuildConfig {
     getAllChannelIds() {
         return Object.values(this.guilds);
     }
+
+    getAllGuildChannels() {
+        return { ...this.guilds };
+    }
+
+    getGuildIdByChannel(channelId) {
+        return Object.keys(this.guilds).find((guildId) => this.guilds[guildId] === channelId) || null;
+    }
 }

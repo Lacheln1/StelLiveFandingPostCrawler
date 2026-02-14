@@ -51,6 +51,15 @@ export class DiscordNotifier {
             }
         }
 
+        // 추방된 서버 정리: guilds.json에는 있지만 봇의 guild cache에 없는 서버 제거
+        const guildChannels = this.guildConfig.getAllGuildChannels();
+        for (const guildId of Object.keys(guildChannels)) {
+            if (!this.client.guilds.cache.has(guildId)) {
+                console.log(`추방된 서버 제거: ${guildId}`);
+                this.guildConfig.removeGuild(guildId);
+            }
+        }
+
         //디스코드 봇 상태메시지 관리
         this.client.user.setPresence({
             activities: [
@@ -202,6 +211,7 @@ export class DiscordNotifier {
         }
 
         let successCount = 0;
+        let removedCount = 0;
 
         for (const channelId of channelIds) {
             try {
@@ -211,11 +221,19 @@ export class DiscordNotifier {
                     successCount++;
                 }
             } catch (error) {
-                console.error(`채널 ${channelId} 알림 전송 실패:`, error.message);
+                const guildId = this.guildConfig.getGuildIdByChannel(channelId);
+                if (guildId && !this.client.guilds.cache.has(guildId)) {
+                    console.log(`추방된 서버 제거: ${guildId}`);
+                    this.guildConfig.removeGuild(guildId);
+                    removedCount++;
+                } else {
+                    console.error(`채널 ${channelId} 알림 전송 실패:`, error.message);
+                }
             }
         }
 
-        console.log(`Discord 알림 전송: ${successCount}/${channelIds.length}개 채널 성공`);
+        const activeCount = channelIds.length - removedCount;
+        console.log(`Discord 알림 전송: ${successCount}/${activeCount}개 채널 성공`);
         return successCount > 0;
     }
 
