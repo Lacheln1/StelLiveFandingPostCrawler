@@ -5,15 +5,17 @@ fanding.kr의 StelLive 크리에이터 페이지를 모니터링하고 새 글�
 ## 주요 기능
 
 - **자동 크롤링**: 오전 9시 ~ 밤12시 : 5분, 밤 12시 ~ 오전9시: 60분마다 새 글 확인
-- **Discord 알림**: 새 글 발견 시 즉시 Discord Webhook으로 알림
+- **Discord 봇 알림**: 새 글 발견 시 discord.js 봇을 통해 다중 서버에 알림
+- **슬래시 커맨드**: `/setchannel` 명령어로 알림 채널 설정
+- **다중 서버 지원**: 여러 Discord 서버에 동시 알림 전송
 - **효율적 감지**: 중복 알림 방지 시스템
 
 ## 기술 스택
 
 - **Node.js 22**: ES Modules 사용
+- **discord.js**: Discord 봇 클라이언트
 - **Puppeteer**: 웹 크롤링
 - **node-cron**: 스케줄링
-- **Native Fetch API**: HTTP 요청 (Discord Webhook)
 
 ## 설치 및 실행
 
@@ -31,10 +33,10 @@ npm install
 cp .env.example .env
 ```
 
-`.env` 파일을 열어서 Discord Webhook URL 입력:
+`.env` 파일을 열어서 Discord 봇 토큰 입력:
 
 ```env
-DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN
+DISCORD_BOT_TOKEN=your_bot_token_here
 ```
 
 ### 3단계: 페이지 구조 분석
@@ -70,15 +72,14 @@ npm start
 - 서버가 로컬 환경에서 실행되므로 IDE 또는 터미널을 계속 켜두어야 합니다.
 - IDE 또는 터미널을 종료하면 서버가 중단됩니다.
 
-## Discord Webhook URL 생성
+## Discord 봇 토큰 발급
 
-1. Discord 서버에서 **서버 설정** 열기
-2. **연동** → **웹후크** 클릭
-3. **새 웹후크** 생성
-4. 웹후크 이름 설정 (예: "Stellive Bot")
-5. 알림을 받을 채널 선택
-6. **웹후크 URL 복사** 버튼 클릭
-7. `.env` 파일에 붙여넣기
+1. [Discord Developer Portal](https://discord.com/developers/applications)에서 **New Application** 클릭
+2. **Bot** 탭에서 **Add Bot** 클릭
+3. **Reset Token**으로 토큰 발급 후 `.env` 파일에 붙여넣기
+4. **OAuth2 → URL Generator**에서 `bot`, `applications.commands` 스코프 선택
+5. Bot Permissions에서 `Send Messages`, `Embed Links` 권한 선택
+6. 생성된 URL로 봇을 서버에 초대
 
 ## 프로젝트 구조
 
@@ -86,7 +87,8 @@ npm start
 backend/
 ├── src/
 │   ├── crawler.js       # Puppeteer 크롤링 로직
-│   ├── discord.js       # Discord Webhook 전송
+│   ├── discord.js       # Discord 봇 클라이언트 및 알림 전송
+│   ├── guildConfig.js   # 길드별 채널 설정 관리
 │   └── scheduler.js     # Cron 스케줄러
 ├── index.js             # 메인 엔트리 포인트
 ├── test.js              # 테스트 스크립트
@@ -226,9 +228,10 @@ npm run analyze
 
 ### Discord 알림이 오지 않을 때
 
-1. `.env` 파일의 Webhook URL 확인
-2. `npm test` 실행해서 테스트 메시지 전송
-3. Discord 채널 권한 확인
+1. `.env` 파일의 봇 토큰 확인
+2. 봇이 서버에 초대되어 있는지 확인
+3. `/setchannel` 명령어로 알림 채널이 설정되어 있는지 확인
+4. 봇에 해당 채널의 메시지 전송 권한이 있는지 확인
 
 ## 라이선스
 
