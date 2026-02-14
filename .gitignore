@@ -22,8 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.claude/settings.local.json
 
 # Environment variables
 .env
 .env.*
 !.env.example
+
+# Guild config (runtime data)
+guilds.json

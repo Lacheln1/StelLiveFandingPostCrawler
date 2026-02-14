@@ -20,9 +20,10 @@
     "author": "",
     "license": "MIT",
     "dependencies": {
-        "puppeteer": "^23.0.0",
+        "discord.js": "^14.25.1",
+        "dotenv": "^16.4.5",
         "node-cron": "^3.0.3",
-        "dotenv": "^16.4.5"
+        "puppeteer": "^23.0.0"
     },
     "engines": {
         "node": ">=22.0.0"

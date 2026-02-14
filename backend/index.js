@@ -1,13 +1,15 @@
 import "dotenv/config";
 import { Scheduler } from "./src/scheduler.js";
+import { DiscordNotifier } from "./src/discord.js";
 
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
-if (!DISCORD_WEBHOOK_URL) {
-    console.error("DISCORD_WEBHOOK_URL 환경변수가 설정되지 않았습니다.");
+if (!DISCORD_BOT_TOKEN) {
+    console.error("DISCORD_BOT_TOKEN 환경변수가 설정되지 않았습니다.");
     process.exit(1);
 }
 
+const notifier = new DiscordNotifier(DISCORD_BOT_TOKEN);
 const scheduler = new Scheduler();
 
 async function main() {
@@ -16,7 +18,8 @@ async function main() {
     console.log("══════════════════════════");
 
     try {
-        await scheduler.initialize(DISCORD_WEBHOOK_URL);
+        await notifier.initialize();
+        await scheduler.initialize(notifier);
         scheduler.start();
 
         console.log("봇이 정상적으로 실행되었습니다.");

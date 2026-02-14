@@ -1,6 +1,5 @@
 import cron from "node-cron";
 import { FandingCrawler } from "./crawler.js";
-import { DiscordNotifier } from "./discord.js";
 
 export class Scheduler {
     constructor() {
@@ -9,11 +8,11 @@ export class Scheduler {
         this.task = null;
     }
 
-    async initialize(webhookUrl) {
+    async initialize(notifier) {
         console.log("스케줄러 초기화 중...");
 
         this.crawler = new FandingCrawler();
-        this.notifier = new DiscordNotifier(webhookUrl);
+        this.notifier = notifier;
 
         await this.crawler.initialize();
 
@@ -87,6 +86,9 @@ export class Scheduler {
         this.stop();
         if (this.crawler) {
             await this.crawler.close();
+        }
+        if (this.notifier) {
+            await this.notifier.destroy();
         }
         console.log("정리 완료");
     }
