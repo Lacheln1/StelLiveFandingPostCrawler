@@ -186,13 +186,12 @@ export class DiscordNotifier {
         }
 
         const embed = new EmbedBuilder()
-            .setTitle("StelLive 새 글 알림")
+            .setTitle("StelLive 팬딩 새 글 알림")
             .setDescription(post.title)
-            .setURL(post.link)
             .setColor(0x5865f2)
             .addFields(
                 {
-                    name: "링크",
+                    name: "게시글 링크",
                     value: `[여기를 클릭하세요](${post.link})`,
                     inline: false,
                 },
