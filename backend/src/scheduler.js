@@ -6,6 +6,7 @@ export class Scheduler {
         this.crawler = null;
         this.notifier = null;
         this.task = null;
+        this.isRunning = false;
     }
 
     async initialize(notifier) {
@@ -22,34 +23,35 @@ export class Scheduler {
         console.log("스케줄러 준비 완료.");
     }
 
+    async executeCrawl(label) {
+        if (this.isRunning) {
+            console.log(`[${label}] 이전 크롤링이 아직 실행 중입니다. 건너뜁니다.`);
+            return;
+        }
+        this.isRunning = true;
+        try {
+            console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            console.log(`[${label}] 스케줄 실행:`, new Date().toLocaleString("ko-KR"));
+            const newPost = await this.crawler.crawl();
+            if (newPost) {
+                await this.notifier.sendNotification(newPost);
+            }
+            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+        } finally {
+            this.isRunning = false;
+        }
+    }
+
     start() {
         // 시간대별 차등 크롤링 (cron 방식)
         // 활동 시간대 (9시~23시): 5분마다
-        const activeHoursTask = cron.schedule("*/5 9-23 * * *", async () => {
-            console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            console.log("[활동 시간대] 스케줄 실행:", new Date().toLocaleString("ko-KR"));
-
-            const newPost = await this.crawler.crawl();
-
-            if (newPost) {
-                await this.notifier.sendNotification(newPost);
-            }
-
-            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+        const activeHoursTask = cron.schedule("*/5 9-23 * * *", () => {
+            this.executeCrawl("활동 시간대");
         });
 
         // 비활동 시간대 (0시~8시): 1시간마다
-        const inactiveHoursTask = cron.schedule("0 0-8 * * *", async () => {
-            console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            console.log("[비활동 시간대] 스케줄 실행:", new Date().toLocaleString("ko-KR"));
-
-            const newPost = await this.crawler.crawl();
-
-            if (newPost) {
-                await this.notifier.sendNotification(newPost);
-            }
-
-            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+        const inactiveHoursTask = cron.schedule("0 0-8 * * *", () => {
+            this.executeCrawl("비활동 시간대");
         });
 
         this.task = { active: activeHoursTask, inactive: inactiveHoursTask };
@@ -59,20 +61,7 @@ export class Scheduler {
         console.log("비활동 시간대 (00:00~08:59): 1시간마다\n");
 
         // 즉시 한 번 실행
-        this.runImmediately();
-    }
-
-    async runImmediately() {
-        console.log("------------");
-        console.log("수동 실행:", new Date().toLocaleString("ko-KR"));
-
-        const newPost = await this.crawler.crawl();
-
-        if (newPost) {
-            await this.notifier.sendNotification(newPost);
-        }
-
-        console.log("------------");
+        this.executeCrawl("수동 실행");
     }
 
     stop() {
