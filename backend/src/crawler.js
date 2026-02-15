@@ -48,7 +48,7 @@ export class FandingCrawler {
                 await this.initialize();
             } catch (e) {
                 console.error("브라우저 재시작 실패:", e.message);
-                return null;
+                return [];
             }
         }
 
@@ -85,54 +85,63 @@ export class FandingCrawler {
                 console.warn("게시글 요소를 찾는데 시간이 걸리거나 실패했습니다.");
             }
 
-            // 3. 최신 글 정보 추출
-            const latestPost = await newPage.evaluate(() => {
-                const postLink = document.querySelector('a.channel-card[href*="/post/"]');
-                if (!postLink) return null;
+            // 3. 모든 게시글 정보 추출
+            const allPosts = await newPage.evaluate(() => {
+                const postLinks = document.querySelectorAll('a.channel-card[href*="/post/"]');
+                if (!postLinks.length) return [];
 
-                const link = postLink.href;
-                const postIdMatch = link.match(/\/post\/(\d+)\//);
-                const postId = postIdMatch ? postIdMatch[1] : null; // ID 없으면 null 처리
-                if (!postId) return null;
+                return Array.from(postLinks).map((postLink) => {
+                    const link = postLink.href;
+                    const postIdMatch = link.match(/\/post\/(\d+)\//);
+                    const postId = postIdMatch ? postIdMatch[1] : null;
+                    if (!postId) return null;
 
-                const titleElement = postLink.querySelector(".channel-card-title");
-                const title = titleElement?.textContent?.trim() || "제목 없음";
+                    const titleElement = postLink.querySelector(".channel-card-title");
+                    const title = titleElement?.textContent?.trim() || "제목 없음";
 
-                const imageElement = postLink.querySelector(".channel-card-thumbnail img");
-                const image = imageElement?.src || null;
+                    const imageElement = postLink.querySelector(".channel-card-thumbnail img");
+                    const image = imageElement?.src || null;
 
-                // 작성 시간 추출
-                const timeElement = postLink.querySelector(
-                    ".channel-card-info-group .channel-card-info",
-                );
-                const timestamp = timeElement?.textContent?.trim();
+                    const timeElement = postLink.querySelector(
+                        ".channel-card-info-group .channel-card-info",
+                    );
+                    const timestamp = timeElement?.textContent?.trim();
 
-                return { postId, title, link, image, timestamp };
+                    return { postId, title, link, image, timestamp };
+                }).filter(Boolean);
             });
 
-            if (!latestPost) {
+            if (!allPosts.length) {
                 console.log("게시글을 찾을 수 없습니다.");
-                return null;
+                return [];
             }
 
             // 4. 로직 처리
             if (this.lastPostId === null) {
-                this.lastPostId = latestPost.postId;
+                this.lastPostId = allPosts[0].postId;
                 console.log("초기 설정 완료. 최신글 ID:", this.lastPostId);
 
-                // 최초 실행 시 현재 최신 글을 반환하여 알림 전송
-                return latestPost;
+                // 최초 실행 시 현재 최신 글 1개만 반환하여 알림 전송
+                return [allPosts[0]];
             }
 
-            if (this.lastPostId !== latestPost.postId) {
-                console.log(`새 글이 발견되었습니다. [${latestPost.title}]`);
-                this.lastPostId = latestPost.postId;
+            // lastPostId 이후의 새 글 필터링
+            const newPosts = allPosts
+                .filter((post) => parseInt(post.postId) > parseInt(this.lastPostId))
+                .sort((a, b) => parseInt(a.postId) - parseInt(b.postId));
 
-                return latestPost;
+            if (newPosts.length === 0) {
+                console.log("새 글 없음");
+                return [];
             }
 
-            console.log("새 글 없음");
-            return null;
+            console.log(`새 글 ${newPosts.length}개 발견`);
+            for (const post of newPosts) {
+                console.log(`  - [${post.title}] (ID: ${post.postId})`);
+            }
+            this.lastPostId = newPosts[newPosts.length - 1].postId;
+
+            return newPosts;
         } catch (error) {
             console.error("크롤링 에러 발생:", error.message);
 
@@ -144,7 +153,7 @@ export class FandingCrawler {
                 console.log("브라우저 세션이 종료되었습니다. 다음 실행 시 재시작합니다.");
                 this.browser = null;
             }
-            return null;
+            return [];
         } finally {
             // 5. 페이지 닫기 (반드시 실행)
             if (newPage) {

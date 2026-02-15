@@ -32,9 +32,12 @@ export class Scheduler {
         try {
             console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             console.log(`[${label}] 스케줄 실행:`, new Date().toLocaleString("ko-KR"));
-            const newPost = await this.crawler.crawl();
-            if (newPost) {
-                await this.notifier.sendNotification(newPost);
+            const newPosts = await this.crawler.crawl();
+            for (const post of newPosts) {
+                await this.notifier.sendNotification(post);
+                if (newPosts.length > 1) {
+                    await new Promise((resolve) => setTimeout(resolve, 100));
+                }
             }
             console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
         } finally {
