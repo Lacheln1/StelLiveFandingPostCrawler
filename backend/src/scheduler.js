@@ -2,7 +2,8 @@ import cron from "node-cron";
 import { FandingCrawler } from "./crawler.js";
 
 export class Scheduler {
-    constructor() {
+    constructor(db) {
+        this.db = db;
         this.crawler = null;
         this.notifier = null;
         this.task = null;
@@ -12,7 +13,7 @@ export class Scheduler {
     async initialize(notifier) {
         console.log("스케줄러 초기화 중...");
 
-        this.crawler = new FandingCrawler();
+        this.crawler = new FandingCrawler(this.db);
         this.notifier = notifier;
 
         await this.crawler.initialize();

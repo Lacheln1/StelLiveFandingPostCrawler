@@ -1,9 +1,10 @@
 import puppeteer from "puppeteer";
 
 export class FandingCrawler {
-    constructor() {
+    constructor(db) {
         this.browser = null;
-        this.lastPostId = null;
+        this.db = db;
+        this.lastPostId = db.getLastPostId();
     }
 
     async initialize() {
@@ -119,6 +120,8 @@ export class FandingCrawler {
             // 4. 로직 처리
             if (this.lastPostId === null) {
                 this.lastPostId = allPosts[0].postId;
+                this.db.setLastPostId(this.lastPostId);
+                this.db.insertPosts(allPosts);
                 console.log("초기 설정 완료. 최신글 ID:", this.lastPostId);
 
                 // 최초 실행 시 현재 최신 글 1개만 반환하여 알림 전송
@@ -140,6 +143,8 @@ export class FandingCrawler {
                 console.log(`  - [${post.title}] (ID: ${post.postId})`);
             }
             this.lastPostId = newPosts[newPosts.length - 1].postId;
+            this.db.setLastPostId(this.lastPostId);
+            this.db.insertPosts(newPosts);
 
             return newPosts;
         } catch (error) {

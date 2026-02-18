@@ -12,12 +12,12 @@ import {
 import { GuildConfig } from "./guildConfig.js";
 
 export class DiscordNotifier {
-    constructor(token) {
+    constructor(token, db) {
         this.token = token;
         this.client = new Client({
             intents: [GatewayIntentBits.Guilds],
         });
-        this.guildConfig = new GuildConfig();
+        this.guildConfig = new GuildConfig(db);
     }
 
     async initialize() {
