@@ -31,3 +31,7 @@ dist-ssr
 
 # Guild config (runtime data)
 guilds.json
+guilds.json.*
+
+# Database
+backend/data/
