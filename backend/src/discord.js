@@ -285,6 +285,11 @@ export class DiscordNotifier {
                     value: `https://fanding.kr/@stellive/`,
                     inline: true,
                 },
+                {
+                    name: "스텔라이브 스토어 페이지 바로가기",
+                    value: `https://fanding.kr/@stellive/shop`,
+                    inline: true,
+                },
             )
             .setFooter({ text: "비공식 팬 메이드 스텔라이브 팬딩 알림 봇" });
 
