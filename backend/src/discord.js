@@ -17,6 +17,7 @@ import { GuildConfig } from "./guildConfig.js";
  * Discord 봇 연결, 슬래시 커맨드(/setchannel, /check) 처리,
  * 팬딩 새 글 알림 전송을 담당합니다.
  */
+
 export class DiscordNotifier {
     constructor(token, db) {
         this.token = token;
@@ -216,7 +217,10 @@ export class DiscordNotifier {
                 }
 
                 if (!this.checkCallback) {
-                    await interaction.reply({ content: "봇이 아직 초기화 중입니다.", ephemeral: true });
+                    await interaction.reply({
+                        content: "봇이 아직 초기화 중입니다.",
+                        ephemeral: true,
+                    });
                     return;
                 }
 
@@ -233,12 +237,14 @@ export class DiscordNotifier {
                     const posts = await Promise.race([
                         this.checkCallback(),
                         new Promise((_, reject) =>
-                            setTimeout(() => reject(new Error("TIMEOUT")), TIMEOUT_MS)
+                            setTimeout(() => reject(new Error("TIMEOUT")), TIMEOUT_MS),
                         ),
                     ]);
 
                     if (!posts || posts.length === 0) {
-                        await interaction.editReply({ content: "최신 게시글을 가져오지 못했습니다." });
+                        await interaction.editReply({
+                            content: "최신 게시글을 가져오지 못했습니다.",
+                        });
                         return;
                     }
 
@@ -246,7 +252,9 @@ export class DiscordNotifier {
                     console.log(`/check 실행 완료: ${interaction.guild.name}`);
                 } catch (error) {
                     if (error.message === "TIMEOUT") {
-                        await interaction.editReply({ content: "크롤링이 5분을 초과하여 중단되었습니다." });
+                        await interaction.editReply({
+                            content: "크롤링이 5분을 초과하여 중단되었습니다.",
+                        });
                     } else {
                         await interaction.editReply({ content: "크롤링 중 오류가 발생했습니다." });
                         console.error("/check 오류:", error.message);
@@ -272,8 +280,13 @@ export class DiscordNotifier {
             .addFields(
                 { name: "게시글 링크", value: `[여기를 클릭하세요](${post.link})`, inline: false },
                 { name: "작성 시간", value: post.timestamp, inline: true },
+                {
+                    name: "스텔라이브 팬딩 바로가기",
+                    value: `https://fanding.kr/@stellive/`,
+                    inline: true,
+                },
             )
-            .setFooter({ text: "fanding.kr/@stellive 비공식 팬메이드 알림 봇" });
+            .setFooter({ text: "비공식 팬 메이드 스텔라이브 팬딩 알림 봇" });
 
         if (post.image) embed.setThumbnail(post.image);
         return embed;
@@ -287,8 +300,7 @@ export class DiscordNotifier {
             return false;
         }
 
-        const embed = this._buildPostEmbed(post)
-            .setTitle("StelLive 팬딩 새 글 알림");
+        const embed = this._buildPostEmbed(post).setTitle("StelLive 팬딩 새 글 알림");
 
         let successCount = 0;
         let removedCount = 0;
