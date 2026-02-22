@@ -96,6 +96,7 @@ process.on("SIGTERM", shutdown);
 //에러 핸들링
 process.on("unhandledRejection", (error) => {
     console.error("unhandledRejection", error);
+    process.exit(1);
 });
 
 main();

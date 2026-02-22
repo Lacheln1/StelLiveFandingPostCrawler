@@ -213,6 +213,9 @@ export class DiscordNotifier {
                             ephemeral: true,
                         });
                         return;
+                    } else {
+                        // 쿨타임 만료 → Map에서 제거
+                        this.guildCheckTimes.delete(guildId);
                     }
                 }
 
@@ -338,6 +341,7 @@ export class DiscordNotifier {
     }
 
     async destroy() {
+        this.client.removeAllListeners();
         this.client.destroy();
         console.log("Discord 봇 연결 종료");
     }
