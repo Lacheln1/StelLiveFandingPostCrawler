@@ -180,11 +180,11 @@ export class FandingCrawler {
             return [allPosts[0]];
         }
 
-        // parseInt()로 문자열 ID를 정수로 변환하여 비교합니다.
-        // 팬딩의 post ID는 순차적으로 증가하는 숫자형 문자열이므로,
-        // lastPostId보다 큰 ID = 새 게시글입니다.
+        // posts 테이블에 없는 게시글 = 새 게시글입니다.
+        // ID 크기 비교 대신 DB 존재 여부로 판단하므로,
+        // ID가 단조 증가하지 않아도 정확하게 새 글을 감지합니다.
         const newPosts = allPosts
-            .filter((post) => parseInt(post.postId) > parseInt(this.lastPostId))
+            .filter((post) => !this.db.getPostById(post.postId))
             .sort((a, b) => parseInt(a.postId) - parseInt(b.postId));
 
         if (newPosts.length === 0) {
@@ -197,9 +197,9 @@ export class FandingCrawler {
             console.log(`  - [${post.title}] (ID: ${post.postId})`);
         }
 
-        // newPosts는 오래된 글 순으로 정렬되어 있으므로, 배열의 마지막 항목이 가장 최신 글입니다.
-        // 이 ID를 lastPostId로 저장하여 다음 크롤링 시 중복 감지의 기준으로 삼습니다.
-        this.lastPostId = newPosts[newPosts.length - 1].postId;
+        // 페이지 최상단 글(가장 최신 글)의 ID를 lastPostId로 저장합니다.
+        // 중복 감지는 DB 기반으로 이루어지므로, lastPostId는 최초 실행 여부 판단에만 사용됩니다.
+        this.lastPostId = allPosts[0].postId;
         this.db.setLastPostId(this.lastPostId);
         this.db.insertPosts(newPosts);
 
