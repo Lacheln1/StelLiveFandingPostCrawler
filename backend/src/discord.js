@@ -282,16 +282,16 @@ export class DiscordNotifier {
             .setColor(0x5865f2)
             .addFields(
                 { name: "게시글 링크", value: `[여기를 클릭하세요](${post.link})`, inline: false },
-                { name: "작성 시간", value: post.timestamp, inline: true },
+                { name: "작성 시간", value: post.timestamp, inline: false },
                 {
                     name: "스텔라이브 팬딩 바로가기",
                     value: `https://fanding.kr/@stellive/`,
-                    inline: true,
+                    inline: false,
                 },
                 {
                     name: "스텔라이브 스토어 페이지 바로가기",
                     value: `https://fanding.kr/@stellive/shop`,
-                    inline: true,
+                    inline: false,
                 },
             )
             .setFooter({ text: "비공식 팬 메이드 스텔라이브 팬딩 알림 봇" });
